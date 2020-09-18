@@ -6,16 +6,22 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/mschristensen/golife/pkg/draw"
-	"github.com/mschristensen/golife/pkg/life"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/mschristensen/golife/pkg/draw"
+	"github.com/mschristensen/golife/pkg/life"
 	"github.com/pkg/errors"
 )
 
 const (
-	WorldWidth  = 1400
-	WorldHeight = 800
+	// WindowWidth is the width of the window in pixels
+	WindowWidth = 1200
+	// WindowHeight is the height of the window in pixels
+	WindowHeight = 800
+	// WorldWidth is the width of the world in # cells.
+	WorldWidth = 300
+	// WorldHeight is the height of the world in # cells.
+	WorldHeight = 200
 )
 
 func createWindow(title string, width, height float64) (*pixelgl.Window, error) {
@@ -31,8 +37,9 @@ func createWindow(title string, width, height float64) (*pixelgl.Window, error) 
 	return window, nil
 }
 
+// Run runs the game.
 func Run() {
-	window, err := createWindow("GoLife", WorldWidth, WorldHeight)
+	window, err := createWindow("GoLife", WindowWidth, WindowHeight)
 	if err != nil {
 		panic(errors.Wrap(err, "create window failed"))
 	}
@@ -42,6 +49,7 @@ func Run() {
 	drawer := draw.NewDrawer()
 	for !window.Closed() {
 		drawer.DrawFrame(window, world)
+		world.Update()
 		window.Update()
 		frames++
 		select {

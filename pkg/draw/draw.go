@@ -27,26 +27,21 @@ func (d *Drawer) DrawFrame(window *pixelgl.Window, world *life.World) error {
 
 	imd := imdraw.New(nil)
 	imd.Color = pixel.RGB(0, 0, 0)
-	imd.Push(pixel.V(float64(10), float64(10)))
-	imd.Push(pixel.V(float64(20), float64(20)))
-	// cellWidth := 1.0
-	for i := range world.Grid {
-		for j := range world.Grid[i] {
-			if !world.Grid[i][j] {
+	scale := pixel.V(
+		window.Bounds().Max.Y/float64(len(world.Grid)),
+		window.Bounds().Max.X/float64(len(world.Grid[0])),
+	)
+	for y := range world.Grid {
+		for x := range world.Grid[y] {
+			if !world.Grid[y][x] {
 				continue
 			}
-			// imd.Push(pixel.V(float64(i)*cellWidth, float64(j)*cellWidth))
-			// imd.Push(pixel.V(float64(i+10)*cellWidth, float64(j+10)*cellWidth))
-			// imd.Rectangle(0)
+			imd.Push(pixel.V(float64(x)*scale.X, float64(y)*scale.Y))
+			imd.Push(pixel.V(float64(x+1)*scale.X, float64(y+1)*scale.Y))
+			imd.Rectangle(0)
 		}
-		break
 	}
-	// imd.Color = pixel.RGB(0, 1, 0)
-	// imd.Color = pixel.RGB(0, 0, 1)
-	// imd.Push(pixel.V(500, 700))
-	// imd.Polygon(0)
 	imd.Draw(d.Batch)
-	// d.Batch.SetMatrix()
 
 	d.Batch.Draw(window)
 	return nil
