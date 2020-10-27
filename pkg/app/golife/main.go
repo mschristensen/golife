@@ -19,9 +19,9 @@ const (
 	// WindowHeight is the height of the window in pixels
 	WindowHeight = 800
 	// WorldWidth is the width of the world in # cells.
-	WorldWidth = 300
+	WorldWidth = 1200
 	// WorldHeight is the height of the world in # cells.
-	WorldHeight = 200
+	WorldHeight = 800
 )
 
 func createWindow(title string, width, height float64) (*pixelgl.Window, error) {
