@@ -1,6 +1,9 @@
 package life
 
-import "math/rand"
+import (
+	"math/rand"
+	"sync"
+)
 
 // World describes the world grid.
 type World struct {
@@ -73,23 +76,28 @@ func (w *World) Update() {
 	}
 
 	// Apply Conway's rules
+	var wg sync.WaitGroup
 	for y := range w.Grid {
-		for x := range w.Grid[y] {
-			n := w.CountLiveNeighbours(x, y)
-			if w.Grid[y][x] {
-				// Any live cell with fewer than two or more than three live neighbours dies
-				if n < 2 || n > 3 {
-					nextGrid[y][x] = false
-				}
-			} else {
-				// Any dead cell with exactly three live neighbours becomes a live cell
-				if n == 3 {
-					nextGrid[y][x] = true
+		wg.Add(1)
+		go func(y int) {
+			defer wg.Done()
+			for x := range w.Grid[y] {
+				n := w.CountLiveNeighbours(x, y)
+				if w.Grid[y][x] {
+					// Any live cell with fewer than two or more than three live neighbours dies
+					if n < 2 || n > 3 {
+						nextGrid[y][x] = false
+					}
+				} else {
+					// Any dead cell with exactly three live neighbours becomes a live cell
+					if n == 3 {
+						nextGrid[y][x] = true
+					}
 				}
 			}
-		}
+		}(y)
 	}
-
+	wg.Wait()
 	// Update the world grid
 	w.Grid = nextGrid
 }
