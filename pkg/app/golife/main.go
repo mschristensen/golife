@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "image/png"
 	"math/rand"
+	"runtime"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -49,7 +50,7 @@ func Run() {
 	drawer := draw.NewDrawer()
 	for !window.Closed() {
 		drawer.DrawFrame(window, world)
-		world.Update()
+		world.Update(runtime.NumCPU())
 		window.Update()
 		frames++
 		select {

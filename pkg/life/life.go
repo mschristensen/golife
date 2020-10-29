@@ -66,8 +66,30 @@ func (w *World) CountLiveNeighbours(x, y int) int {
 	return count
 }
 
+// updatePartition applies the rules to a vertically-partitioned portion of the world.
+func (w *World) updatePartition(wg *sync.WaitGroup, yStart, yEnd int, nextGrid [][]bool) {
+	defer wg.Done()
+	for y := range w.Grid[yStart:yEnd] {
+		y = y + yStart
+		for x := range w.Grid[y] {
+			n := w.CountLiveNeighbours(x, y)
+			if w.Grid[y][x] {
+				// Any live cell with fewer than two or more than three live neighbours dies
+				if n < 2 || n > 3 {
+					nextGrid[y][x] = false
+				}
+			} else {
+				// Any dead cell with exactly three live neighbours becomes a live cell
+				if n == 3 {
+					nextGrid[y][x] = true
+				}
+			}
+		}
+	}
+}
+
 // Update applies the rules to the world.
-func (w *World) Update() {
+func (w *World) Update(partitions int) {
 	// Create a deep copy of the world grid
 	nextGrid := make([][]bool, len(w.Grid))
 	for y := range w.Grid {
@@ -77,27 +99,12 @@ func (w *World) Update() {
 
 	// Apply Conway's rules
 	var wg sync.WaitGroup
-	for y := range w.Grid {
+	for p := 0; p < partitions; p++ {
 		wg.Add(1)
-		go func(y int) {
-			defer wg.Done()
-			for x := range w.Grid[y] {
-				n := w.CountLiveNeighbours(x, y)
-				if w.Grid[y][x] {
-					// Any live cell with fewer than two or more than three live neighbours dies
-					if n < 2 || n > 3 {
-						nextGrid[y][x] = false
-					}
-				} else {
-					// Any dead cell with exactly three live neighbours becomes a live cell
-					if n == 3 {
-						nextGrid[y][x] = true
-					}
-				}
-			}
-		}(y)
+		go w.updatePartition(&wg, p*w.Height/partitions, (p+1)*w.Height/partitions, nextGrid)
 	}
 	wg.Wait()
+
 	// Update the world grid
 	w.Grid = nextGrid
 }

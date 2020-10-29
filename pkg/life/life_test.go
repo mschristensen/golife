@@ -1,19 +1,36 @@
 package life_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mschristensen/golife/pkg/life"
 )
 
-func benchmarkUpdate(sideLength int, b *testing.B) {
-	world := life.NewWorld(sideLength, sideLength)
+type benchmark struct {
+	numGoroutines int
+	height        int
+}
+
+var benchmarks = []benchmark{
+	{1, 128}, {1, 1024}, {1, 8192},
+	{2, 128}, {2, 1024}, {2, 8192},
+	{4, 128}, {4, 1024}, {4, 8192},
+	{8, 128}, {8, 1024}, {8, 8192},
+	{16, 128}, {16, 1024}, {16, 8192},
+}
+
+func benchmarkUpdate(partitions, height int, b *testing.B) {
+	world := life.NewWorld(height, height)
 	for n := 0; n < b.N; n++ {
-		world.Update()
+		world.Update(partitions)
 	}
 }
 
-func BenchmarkUpdate10(b *testing.B)    { benchmarkUpdate(10, b) }
-func BenchmarkUpdate100(b *testing.B)   { benchmarkUpdate(100, b) }
-func BenchmarkUpdate1000(b *testing.B)  { benchmarkUpdate(1000, b) }
-func BenchmarkUpdate10000(b *testing.B) { benchmarkUpdate(10000, b) }
+func BenchmarkUpdate(b *testing.B) {
+	for _, bb := range benchmarks {
+		b.Run(fmt.Sprintf("benchmark_%d_%d", bb.numGoroutines, bb.height), func(b *testing.B) {
+			benchmarkUpdate(bb.numGoroutines, bb.height, b)
+		})
+	}
+}
